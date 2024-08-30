@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 60px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">Project Management Tool</a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="#" id="loginNav">Login</a>
+                <a class="nav-link" href="#" id="registerNav">Register</a>
+                <a class="nav-link hidden" href="#" id="logoutNav">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="loginForm">
+            <h2>Login</h2>
+            <form id="login">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="loginUsername" placeholder="Username" required>
+                </div>
+                <div class="mb-3">
+                    <input type="password" class="form-control" id="loginPassword" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+        </div>
+
+        <div id="registerForm" class="hidden">
+            <h2>Register</h2>
+            <form id="register">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="registerUsername" placeholder="Username" required>
+                </div>
+                <div class="mb-3">
+                    <input type="password" class="form-control" id="registerPassword" placeholder="Password" required>
+                </div>
+                <div class="mb-3">
+                    <select class="form-control" id="registerRole" required>
+                        <option value="">Select Role</option>
+                        <option value="admin">Admin</option>
+                        <option value="project_manager">Project Manager</option>
+                        <option value="team_member">Team Member</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+        </div>
+
+        <div id="dashboard" class="hidden">
+            <h2>Dashboard</h2>
+            <div id="projectsList"></div>
+            <button id="newProjectBtn" class="btn btn-primary mt-3">New Project</button>
+
+            <div id="newProjectForm" class="mt-3 hidden">
+                <h3>Create New Project</h3>
+                <form id="createProject">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="projectName" placeholder="Project Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <textarea class="form-control" id="projectDescription" placeholder="Project Description" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">Create Project</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Client-side JavaScript
+        const API_URL = 'http://localhost:3000/api';
+        let token = localStorage.getItem('token');
+
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const dashboard = document.getElementById('dashboard');
+        const loginNav = document.getElementById('loginNav');
+        const registerNav = document.getElementById('registerNav');
+        const logoutNav = document.getElementById('logoutNav');
+        const projectsList = document.getElementById('projectsList');
+        const newProjectBtn = document.getElementById('newProjectBtn');
+        const newProjectForm = document.getElementById('newProjectForm');
+
+        // Navigation
+        loginNav.addEventListener('click', () => {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            dashboard.classList.add('hidden');
+        });
+
+        registerNav.addEventListener('click', () => {
+            registerForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+            dashboard.classList.add('hidden');
+        });
+
+        logoutNav.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            token = null;
+            loginForm.classList.remove('hidden');
+            dashboard.classList.add('hidden');
+            logoutNav.classList.add('hidden');
+            loginNav.classList.remove('hidden');
+            registerNav.classList.remove('hidden');
+        });
+
+        // Login
+        document.getElementById('login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    token = data.token;
+                    localStorage.setItem('token', token);
+                    showDashboard();
+                } else {
+                    alert('Login failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Register
+        document.getElementById('register').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const role = document.getElementById('registerRole').value;
+
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, role })
+                });
+
+                if (response.ok) {
+                    alert('Registration successful. Please login.');
+                    loginNav.click();
+                } else {
+                    alert('Registration failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Show Dashboard
+        function showDashboard() {
+            loginForm.classList.add('hidden');
+            registerForm.classList.add('hidden');
+            dashboard.classList.remove('hidden');
+            logoutNav.classList.remove('hidden');
+            loginNav.classList.add('hidden');
+            registerNav.classList.add('hidden');
+            fetchProjects();
+        }
+
+        // Fetch Projects
+        async function fetchProjects() {
+            try {
+                const response = await fetch(`${API_URL}/projects`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const projects = await response.json();
+                    displayProjects(projects);
+                } else {
+                    throw new Error('Failed to fetch projects');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Display Projects
+        function displayProjects(projects) {
+            projectsList.innerHTML = '';
+            projects.forEach(project => {
+                const projectElement = document.createElement('div');
+                projectElement.className = 'card mb-3';
+                projectElement.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">${project.name}</h5>
+                        <p class="card-text">${project.description}</p>
+                    </div>
+                `;
+                projectsList.appendChild(projectElement);
+            });
+        }
+
+        // New Project
+        newProjectBtn.addEventListener('click', () => {
+            newProjectForm.classList.toggle('hidden');
+        });
+
+        document.getElementById('createProject').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('projectName').value;
+            const description = document.getElementById('projectDescription').value;
+
+            try {
+                const response = await fetch(`${API_URL}/projects`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name, description })
+                });
+
+                if (response.ok) {
+                    alert('Project created successfully');
+                    fetchProjects();
+                    newProjectForm.classList.add('hidden');
+                    document.getElementById('createProject').reset();
+                } else {
+                    throw new Error('Failed to create project');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Check if user is already logged in
+        if (token) {
+            showDashboard();
+        }
+    </script>
+</body>
+</html>
