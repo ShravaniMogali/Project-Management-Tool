@@ -1,4 +1,5 @@
 READ ME!!!
+The Folder Final SGU HAKERA Submission is our Final submission after 36 hours of tireless coding!
 How to initiate the app >>
 1) in the myReactApp folder, install all the required Modules given in package.json (npm install i)
 2) it is a vite + react project so we can run the app by the following command -> npm run dev
@@ -6,5 +7,6 @@ How to initiate the app >>
 3) also open the VideoChatApp folder and install all the required modules in package.json (npm install i)
 4) go to VideoChatApp/src 
 5) run node app (or) node app.js on the given port only, do not chage the port address.
-6) and you are all set. navigate to the vite+react app in browser and app is yours to use
-7) Be sure you are coonnected to internet, the database used is Firebase, as well as the backend for this entire project is Firebase.
+6) Make sure you are running both VideoChatApp and React app as well for seamless connections.
+7) and you are all set. navigate to the vite+react app in browser and app is yours to use
+8) Be sure you are coonnected to internet, the database used is Firebase, as well as the backend for this entire project is Firebase.
