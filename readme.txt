@@ -42,3 +42,13 @@ A web-based project management tool designed for remote teams. This platform off
 ### Improved
 - **Design:** Enhanced the overall UI/UX design to improve usability and aesthetics, making the platform more intuitive and user-friendly.
 - **Real-time Collaboration:** Upgraded real-time collaboration tools to better handle simultaneous edits and interactions, ensuring smoother and more reliable teamwork.
+
+## Final Prototype
+
+This release includes all features intended for the final product. 
+
+### Key Features:
+- Task Assignment with priority and deadline management
+- Real-time Collaboration with simultaneous editing capabilities
+- Secure File Sharing with access control
+- Progress Tracking with visual dashboards
